@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>日本語クイズ（色付き・再挑戦ボタン）</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f9ff;
+    color: #333;
+    padding: 20px;
+  }
+  h1 {
+    color: #0066cc;
+  }
+  .question {
+    background: #fff;
+    border: 2px solid #ddeeff;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+  }
+  button.option {
+    margin: 5px 0;
+    padding: 8px 12px;
+    font-size: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #e0ecff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  button.option:hover {
+    background-color: #c2dbff;
+  }
+  button.correct {
+    background-color: #a6e6a6 !important;
+  }
+  button.incorrect {
+    background-color: #f6b6b6 !important;
+  }
+  button:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+  #score {
+    margin-top: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #0066cc;
+  }
+  #retry {
+    display: none;
+    margin-top: 20px;
+    padding: 10px 16px;
+    font-size: 16px;
+    background-color: #ffdd88;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #retry:hover {
+    background-color: #ffcc66;
+  }
+</style>
+</head>
+<body>
+
+<h1>Let's チャレンジ！日本語クイズ</h1>
+
+<div id="quiz"></div>
+<div id="score"></div>
+<button id="retry">もう一度挑戦</button>
+
+<script>
+const questions = [
+  {
+    question: "「役不足」の正しい意味はどれ？",
+    options: [
+      "役目が重すぎて力不足だ",
+      "自分には簡単すぎる役目だ",
+      "自分にぴったりの役目だ"
+    ],
+    answer: 1,
+    explanation: "「役不足」は『役目が軽すぎる』という意味です。"
+  },
+  {
+    question: "「敷居が高い」の正しい意味はどれ？",
+    options: [
+      "入るのが難しく感じる",
+      "高級で手が出ない",
+      "相手に対して後ろめたさがある"
+    ],
+    answer: 2,
+    explanation: "本来は『不義理などで行きづらい』という意味です。"
+  },
+  {
+    question: "「情けは人のためならず」の正しい意味はどれ？",
+    options: [
+      "情けをかけるのは相手のためにならない",
+      "情けは巡り巡って自分に返ってくる",
+      "情けは他人に見せびらかすものではない"
+    ],
+    answer: 1,
+    explanation: "『情けは巡り巡って自分に返ってくる』という意味です。"
+  },
+  {
+    question: "「檄を飛ばす」の正しい意味はどれ？",
+    options: [
+      "怒鳴り散らす",
+      "激励する",
+      "自分の考えを広めるために呼びかける"
+    ],
+    answer: 2,
+    explanation: "『檄を飛ばす』は自分の主張を広めるために人に呼びかけることを意味します。"
+  },
+  {
+    question: "「姑息な」の本来の意味はどれ？",
+    options: [
+      "卑怯な",
+      "一時しのぎの",
+      "しつこい"
+    ],
+    answer: 1,
+    explanation: "『姑息』は『その場しのぎ』という意味です。"
+  },
+  {
+    question: "「煮詰まる」の正しい意味はどれ？",
+    options: [
+      "行き詰まる",
+      "結論が出る段階に近づく",
+      "わからなくなる"
+    ],
+    answer: 1,
+    explanation: "『煮詰まる』は結論が出る段階に近づく状態を指します。"
+  }
+];
+
+const quizContainer = document.getElementById("quiz");
+const scoreContainer = document.getElementById("score");
+const retryButton = document.getElementById("retry");
+
+let score = 0;
+let answeredCount = 0;
+
+function initQuiz() {
+  quizContainer.innerHTML = "";
+  scoreContainer.textContent = "";
+  retryButton.style.display = "none";
+  score = 0;
+  answeredCount = 0;
+
+  questions.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question";
+    div.innerHTML = `<p>${index + 1}. ${q.question}</p>`;
+
+    q.options.forEach((opt, i) => {
+      const button = document.createElement("button");
+      button.textContent = opt;
+      button.className = "option";
+      button.addEventListener("click", () => {
+        if (div.querySelector(".explanation")) return;
+
+        const explanationDiv = document.createElement("div");
+        explanationDiv.className = "explanation";
+
+        if (i === q.answer) {
+          button.classList.add("correct");
+          explanationDiv.innerHTML = `<span class="correct">正解！</span> ${q.explanation}`;
+          score++;
+        } else {
+          button.classList.add("incorrect");
+          explanationDiv.innerHTML = `<span class="incorrect">不正解</span> ${q.explanation}`;
+          // 正解ボタンもわかるように色付け
+          const correctButton = div.querySelectorAll("button")[q.answer];
+          correctButton.classList.add("correct");
+        }
+
+        div.appendChild(explanationDiv);
+
+        // 他のボタンを無効化
+        const allButtons = div.querySelectorAll("button");
+        allButtons.forEach(b => b.disabled = true);
+
+        answeredCount++;
+        if (answeredCount === questions.length) {
+          scoreContainer.textContent = `お疲れ様でした！ 正解数: ${score} / ${questions.length}`;
+          retryButton.style.display = "inline-block";
+        }
+      });
+      div.appendChild(button);
+    });
+
+    quizContainer.appendChild(div);
+  });
+}
+
+initQuiz();
+
+retryButton.addEventListener("click", () => {
+  initQuiz();
+});
+</script>
+
+</body>
+</html>
